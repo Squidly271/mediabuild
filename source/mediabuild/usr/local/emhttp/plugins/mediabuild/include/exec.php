@@ -1,28 +1,21 @@
 <?php
 
-echo "Now downloading what ever it was you clicked on<br><br>";
+$mediaPaths['tempFiles']  = "/tmp/mediabuild";
+$mediaPaths['sourcesURL'] = "https://raw.githubusercontent.com/Squidly271/mediabuild-sources/master/sources";
+$mediaPaths['sources'] = $mediaPaths['tempFiles']."/sources.json";
 
-sleep(8);
 
-echo "Verifying md5 of download...";
+switch ($_POST['action']) {
 
-sleep(5);
+case 'show_description':
+  $build = isset($_POST['build']) ? urldecode(($_POST['build'])) : false;
 
-echo "OK<br><br>";
+  $sources = json_decode(file_get_contents($mediaPaths['sources']),true);
 
-echo "Installing to flash drive...";
+  echo "<font size='2' color='red'>".$sources[$build]['imageDescription']."</font>";;
+  break;
 
-sleep(2);
-
-echo "OK<br><br>";
-
-echo "Verifying md5 on flash drive...";
-
-sleep(5);
-
-echo "OK<br><br>";
-
-echo "<font size='3' color='red'>You must restart your server to complete the installation</font>";
-
+}
+  
 
 ?>
