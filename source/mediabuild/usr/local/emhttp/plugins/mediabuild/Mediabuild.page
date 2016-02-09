@@ -1,0 +1,56 @@
+Menu="Utilities"
+Icon=""
+Title="Media Build"
+---
+<?
+/* Copyright 2015-2016 Andrew Zawadzki, CHBMB */
+
+?>
+
+
+<script>
+
+var URL = "/plugins/mediabuild/include/exec.php";
+
+function installBuild(build)
+{
+  swal({
+    title: "Are you sure you want to install whatever it was that you clicked on?",
+    type: "warning",
+    closeOnConfirm: true,
+    showLoaderOnConfirm: true,
+    showCancelButton: true
+  },
+  function ()
+  {
+    openBox("/plugins/mediabuild/include/exec.php","Installing Build",400,400,true);
+
+  });
+}
+
+
+</script>
+
+<strong><font color='red'>Very</font></strong> rough draft to demonstrate work flow
+
+
+Currently Running:  stock unRaid version 6.1.7 
+
+Available Media Builds:
+
+TBS:  <select>
+<option value=''>Select a build</option>
+<option value='6.1.7'>6.1.7</option>
+<option value='6.2'>6.2</option>
+</select>
+<input type='button' value='Install Build' onclick='installBuild();'></input>
+
+OpenElec:  <select>
+<option value=''>Select a build</option>
+<option value='6.1.7'>6.1.7</option>
+<option value='6.2'>6.2</option>
+</select>
+<input type='button' value='Install Build' onclick='installBuild();'></input>
+
+
+</FORM>
