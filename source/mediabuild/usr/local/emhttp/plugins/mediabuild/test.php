@@ -1,13 +1,10 @@
 #!/usr/bin/php
 <?
-$mediaPaths['tempFiles']  = "/tmp/mediabuild";
-$mediaPaths['sourcesURL'] = "https://raw.githubusercontent.com/Squidly271/mediabuild-sources/master/sources";
-$mediaPaths['sources'] = $mediaPaths['tempFiles']."/sources.json";
 
-# set to true for separate menus, or false for all in one
-
-$separate = true;
-
+$types['ddexp']    = "DDExp";
+$types['openelec'] = "OpenElec";
+$types['tbs']      = "TBS";
+$types['stock']    = "unRaid";
 
 
 function download_url($url, $path = "", $bg = false){
@@ -15,66 +12,47 @@ function download_url($url, $path = "", $bg = false){
   return ($exit_code === 0 ) ? implode("\n", $out) : false;
 }
 
-exec('mkdir -p "'.$mediaPaths['tempFiles'].'"');
+$downloadURL = "http://files.linuxserver.io/mediabuild/";
+$tempFile = "/tmp/mediabuild.tmp";
+download_url($downloadURL, $tempFile);
 
-download_url($mediaPaths['sourcesURL'],$mediaPaths['sources']);
+$contents = explode("\n",file_get_contents($tempFile));
 
-$sources = json_decode(file_get_contents($mediaPaths['sources']),true);
-print_r($sources);
-$i = 0;
-foreach ($sources as $source)
-{
-  $source['id'] = $i;
-  if ( $source['imageType'] == "unRaid" )
-  {
-    $buttons['unRaid']['name'] = "unRaid";
-    $buttons['unRaid']['builds'][] = $source;
-  } else {
-    if ( $separate )
-    {
-      $buttons[$source['imageType']]['name'] = $source['imageType'];
-      $buttons[$source['imageType']]['builds'][] = $source;
-    } else {
-      $buttons['MediaBuilds']['name'] = "Media Builds";
-      $buttons['MediaBuilds']['builds'][] = $source;
+foreach ($contents as $line) {
+  if ( strpos($line,"href") ) {
+    if ( preg_match('/"([^"]+)"/', $line, $m) ) {
+      $versionInfo['unRaidVersion'] = $m[1];
+      $versionInfo['basePath'] = $downloadURL.$m[1];
+      $versions[] = $versionInfo;
     }
   }
-  $i = ++$i;
 }
+unset($versions[0]);
 
-foreach ( $buttons as $button )
-{
-  if ( $button['name'] == "unRaid" )
-  {
-    $buttonName = "Stock UnRaid Builds";
-  } else {
-    $buttonName = $button['name']." Media Build";
+foreach ( $versions as $unRaidVersion) {
+  download_url($unRaidVersion['basePath'],$tempFile);
+
+  $contents = explode("\n",file_get_contents($tempFile));
+  unset($mediaTemp);
+  foreach ($contents as $line) {
+    if ( strpos($line,"href") ) {
+      if ( preg_match('/"([^"]+)"/', $line, $m) ) {
+        if ( ! stripos($line,"parent") ) {
+          $type = str_replace("/","",$m[1]);
+          if ( $types[$type] ) {
+            $mediaTypes['imageType'] = $types[$type];
+          } else {
+            $mediaTypes['imageType'] = $type;
+          }
+
+          $mediaTypes['imageURL'] = $unRaidVersion['basePath'].$m[1];
+          $mediaTypes['imageVersion'] = str_replace("-",".",$unRaidVersion['unRaidVersion']);
+          $mediaTypes['imageVersion'] = str_replace("/","",$mediaTypes['imageVersion']);
+          $mediaVersions[] = $mediaTypes;
+        }
+      }
+    }
   }
-
-  $o .= $buttonName.": ";
-  $o .= "<select>";
-
-  foreach ($button['builds'] as $option)
-  {
-    $o .= "<option value='".$option['id']."'>".$option['imageType']." ".$option['imageVersion']."</option>";
-  }
-  $o .= "</select>";
 }
-echo $o;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print_r($mediaVersions);
 ?>
